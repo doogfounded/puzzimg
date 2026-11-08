@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>PuzzImg — Turn Any Image Into a Jigsaw Puzzle</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Top HUD Bar -->
+      <header id="hud" class="hud hidden">
+        <div class="hud-left">
+          <div class="brand">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.61a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.315 8.685a.98.98 0 0 1 .837-.276c.47.07.802.48.968.925a2.501 2.501 0 1 0 3.214-3.214c-.446-.166-.855-.497-.925-.968a.979.979 0 0 1 .276-.837l1.61-1.61a2.404 2.404 0 0 1 1.705-.707c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02Z"/>
+            </svg>
+            <span>PuzzImg</span>
+          </div>
+          <button id="btn-new-puzzle" class="hud-btn primary-outline" title="Upload a new image or change difficulty">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            <span>New Puzzle</span>
+          </button>
+        </div>
+
+        <div class="hud-center">
+          <div class="progress-pill" title="Puzzle Completion Progress">
+            <div class="progress-bar-wrap">
+              <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+            </div>
+            <span id="progress-text" class="progress-text">0% (0/0)</span>
+          </div>
+
+          <div id="timer-pill" class="timer-pill">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span id="timer-display">00:00</span>
+            <button id="btn-pause-timer" class="icon-mini-btn" title="Pause / Resume Game">
+              <svg id="icon-pause" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              <svg id="icon-play" class="hidden" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+            <button id="btn-hide-timer" class="icon-mini-btn" title="Hide / Show Timer">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="hud-right">
+          <!-- Ghost Image Controls -->
+          <div class="ghost-control-group">
+            <button id="btn-ghost-toggle" class="hud-btn" title="Toggle Ghost Image Overlay on Board (G)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/>
+              </svg>
+              <span>Ghost</span>
+            </button>
+            <input id="ghost-opacity-slider" type="range" min="5" max="75" value="25" class="mini-slider hidden" title="Ghost Image Opacity" />
+          </div>
+
+          <button id="btn-preview-toggle" class="hud-btn active" title="Toggle Floating Reference Window (P)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <span>Preview</span>
+          </button>
+
+          <button id="btn-fit-view" class="hud-btn" title="Center & Fit View (F)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
+            <span>Fit</span>
+          </button>
+
+          <button id="btn-sound-toggle" class="hud-btn active" title="Toggle Sound Effects (M)">
+            <svg id="icon-sound-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            </svg>
+            <svg id="icon-sound-off" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Puzzle Canvas -->
+      <canvas id="puzzle-canvas"></canvas>
+
+      <!-- Pause Overlay -->
+      <div id="pause-overlay" class="pause-overlay hidden">
+        <div class="pause-card">
+          <h2>Puzzle Paused</h2>
+          <p>Take a breather! Your pieces are right where you left them.</p>
+          <button id="btn-resume-overlay" class="btn-primary">Resume Puzzle</button>
+        </div>
+      </div>
+
+      <!-- Floating Draggable Reference Preview Window -->
+      <div id="reference-window" class="reference-window hidden">
+        <div id="reference-header" class="reference-header">
+          <span>Reference Image</span>
+          <div class="reference-actions">
+            <button id="btn-ref-size" class="icon-mini-btn" title="Toggle Size">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            </button>
+            <button id="btn-ref-close" class="icon-mini-btn" title="Close Preview">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="reference-body">
+          <img id="reference-img" alt="Reference preview" draggable="false" />
+        </div>
+      </div>
+
+      <!-- Bottom-left Controls Hint Pill -->
+      <div id="controls-hint" class="controls-hint hidden">
+        <span><strong>Drag</strong> piece to move</span>
+        <span class="sep">•</span>
+        <span><strong>Drag table</strong> or <strong>Space+Drag</strong> to pan</span>
+        <span class="sep">•</span>
+        <span><strong>Wheel</strong> to zoom</span>
+        <span id="rotation-hint-item" class="hidden"><span class="sep">•</span><strong>R / Right-Click</strong> to rotate 90°</span>
+      </div>
+
+      <!-- Setup / Image Upload Modal -->
+      <div id="setup-modal" class="modal-backdrop">
+        <div class="modal-card">
+          <div class="modal-header">
+            <div class="modal-title-group">
+              <div class="brand-badge">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.61a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.315 8.685a.98.98 0 0 1 .837-.276c.47.07.802.48.968.925a2.501 2.501 0 1 0 3.214-3.214c-.446-.166-.855-.497-.925-.968a.979.979 0 0 1 .276-.837l1.61-1.61a2.404 2.404 0 0 1 1.705-.707c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02Z"/>
+                </svg>
+              </div>
+              <div>
+                <h1>PuzzImg</h1>
+                <p class="subtitle">Turn any image into an interactive jigsaw puzzle</p>
+              </div>
+            </div>
+            <button id="btn-close-setup" class="icon-btn hidden" title="Return to current puzzle">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <!-- Upload Dropzone -->
+          <div id="dropzone" class="dropzone" tabindex="0">
+            <input id="file-input" type="file" accept="image/*" class="hidden" />
+            <div id="dropzone-empty" class="dropzone-empty">
+              <div class="upload-icon-circle">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </div>
+              <p class="drop-main-text"><strong>Drop an image here</strong>, click to browse, or press <kbd>Ctrl+V</kbd></p>
+              <p class="drop-sub-text">Supports JPG, PNG, WebP, GIF — processed 100% locally in your browser</p>
+            </div>
+
+            <div id="dropzone-preview" class="dropzone-preview hidden">
+              <div class="preview-canvas-wrap">
+                <img id="setup-preview-img" alt="Selected puzzle image" />
+                <canvas id="setup-grid-overlay" class="setup-grid-overlay"></canvas>
+              </div>
+              <div class="preview-meta">
+                <span id="image-dimensions-badge" class="meta-badge">1920 × 1080</span>
+                <button id="btn-change-image" type="button" class="btn-text-action">Change Image</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Puzzle Options -->
+          <div class="setup-options">
+            <div class="option-section">
+              <div class="option-header">
+                <label>Difficulty & Piece Count</label>
+                <span id="grid-summary-badge" class="grid-summary-badge">60 Pieces (10 × 6)</span>
+              </div>
+
+              <div class="preset-tiers">
+                <button type="button" class="tier-btn" data-pieces="24">
+                  <span class="tier-name">Easy</span>
+                  <span class="tier-count">~24 pcs</span>
+                </button>
+                <button type="button" class="tier-btn active" data-pieces="60">
+                  <span class="tier-name">Medium</span>
+                  <span class="tier-count">~60 pcs</span>
+                </button>
+                <button type="button" class="tier-btn" data-pieces="150">
+                  <span class="tier-name">Hard</span>
+                  <span class="tier-count">~150 pcs</span>
+                </button>
+                <button type="button" class="tier-btn" data-pieces="300">
+                  <span class="tier-name">Expert</span>
+                  <span class="tier-count">~300 pcs</span>
+                </button>
+              </div>
+
+              <div class="slider-row">
+                <span class="slider-bound">12</span>
+                <input id="piece-count-slider" type="range" min="12" max="500" value="60" step="1" />
+                <span class="slider-bound">500</span>
+              </div>
+            </div>
+
+            <div class="option-section row-between">
+              <div>
+                <label for="rotation-toggle" class="toggle-label-title">Enable Piece Rotation</label>
+                <p class="option-desc">Pieces spawn rotated (0°/90°/180°/270°). Rotate with <kbd>R</kbd> or Right-Click.</p>
+              </div>
+              <label class="switch">
+                <input id="rotation-toggle" type="checkbox" />
+                <span class="slider-switch"></span>
+              </label>
+            </div>
+          </div>
+
+          <button id="btn-start-puzzle" class="btn-primary btn-large" disabled>
+            <span>Select an Image to Start</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Victory Modal -->
+      <div id="victory-modal" class="modal-backdrop hidden">
+        <div class="modal-card victory-card">
+          <div class="victory-badge">🏆</div>
+          <h2>Puzzle Complete!</h2>
+          <p class="victory-subtitle">Every single piece locked into place.</p>
+
+          <div class="victory-stats">
+            <div class="stat-box">
+              <span class="stat-label">Pieces</span>
+              <span id="victory-pieces" class="stat-value">60</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Time</span>
+              <span id="victory-time" class="stat-value">03:42</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Rotation</span>
+              <span id="victory-rotation" class="stat-value">Off</span>
+            </div>
+          </div>
+
+          <div class="victory-actions">
+            <button id="btn-victory-admire" class="btn-secondary">Admire Board</button>
+            <button id="btn-victory-replay" class="btn-secondary">Play Again</button>
+            <button id="btn-victory-new" class="btn-primary">New Puzzle</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+
